@@ -120,10 +120,15 @@ end
 
 
 def calculateWeekly
+    total_weekly = 0
     $payrolls.each do |day|
         printDayPayroll(day)
-        calculateDay(day)
+        total_weekly += calculateDay(day)
     end
+
+    puts "\n--------------------------------",
+         "Total Weekly Salary: #{total_weekly}",
+         "--------------------------------"
 end
 
 
@@ -187,8 +192,12 @@ def calculateDay(dayPayroll = nil)
     initial_salary = $defaultSalary
 
     if in_hour == out_hour
-        puts "Status: Absent"
-        return
+        if day_type == $REST_D || day_type == $SNWD_RD || day_type == $RH_REST
+            final_salary = initial_salary
+        else
+            puts "Status: Absent"
+            return 0
+        end
     else
         final_salary = (initial_salary * day_rate) + (night_hours * hourly_rate * night_rate) + (ot_hours * hourly_rate * ot_rate) + (night_ot_hours * hourly_rate * night_ot_rate)
     end
@@ -196,4 +205,6 @@ def calculateDay(dayPayroll = nil)
     puts "Hours Overtime (Night Shift Overtime): #{ot_hours} (#{night_ot_hours})",
          "Night Shift Hours: #{night_hours}",
          "Salary for the day: #{final_salary.round(2)}"
+
+    final_salary
 end
