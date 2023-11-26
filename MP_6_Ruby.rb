@@ -1,3 +1,140 @@
+=begin
+********************
+Last names:
+Language:
+Paradigm(s):
+********************
+=end
+
+# GitHub Link: https://github.com/steve3github/ADPRG-MP1-Ruby.git
+
+# Class
+class DayPayroll
+  attr_accessor :day, :in_time, :out_time, :day_type
+
+  def initialize(day, in_time, out_time, day_type)
+      @day = day
+      @in_time = in_time
+      @out_time = out_time
+      @day_type = day_type
+  end
+end
+
+
+# Input Checkers
+def getValidRange(strPrompt, range)
+  loop do
+      begin
+          print strPrompt
+          input = gets.chomp
+          int_value = Integer(input)
+
+          if range.include?(int_value)
+              return int_value
+          else
+              puts "Please enter a valid option."
+          end
+      rescue ArgumentError
+          puts "Invalid input. Please enter a valid integer."
+          retry
+      end
+  end
+end
+
+
+def getValidTime(in_or_out, in_time, time_range)
+  loop do
+      begin
+          print "Enter New #{in_or_out} Time: "
+          input = gets.chomp
+          int_value = Integer(input)
+
+          hour_diff = getHourDiff((in_time / 100), (int_value / 100))
+
+          if !int_value.positive?
+              puts "Please enter a positive number."
+          elsif (int_value % 100) >= 60
+              puts "Please enter a valid minute time."
+          elsif !time_range.include?(int_value)
+              puts "Please enter a valid time within 24 hours."
+          elsif hour_diff < 9
+              puts "You are required to work at least 8 hours. Please try again."
+          else
+              return int_value
+          end
+      rescue ArgumentError
+          puts "Invalid input. Please enter a valid integer."
+          retry
+      end
+  end
+end
+
+
+def getValidNumber
+  begin
+      input = gets.chomp
+      int_value = Integer(input)
+      if !int_value.positive?
+          puts "Please enter a positive number."
+      else
+          return int_value
+      end
+  rescue ArgumentError
+      puts "Invalid input. Please enter a valid number."
+      retry
+  end
+end
+
+
+def getValidDecision(strPrompt)
+  loop do
+      print strPrompt
+      input = gets.chomp
+      if !['y','n'].include?(input)
+          puts "Please decide Yes or No. (y/n)"
+      else
+          return input
+      end
+  end
+end
+
+
+# Print Methods
+def printDayPayroll(payroll)
+  puts "\n#{payroll.day}'s Payroll"
+  puts "Daily Rate: #{$defaultSalary}"
+  puts "IN Time: #{payroll.in_time}"
+  puts "OUT Time: #{payroll.out_time}"
+
+  case payroll.day_type
+  when 0
+      dayType = "Normal Day"
+  when 1
+      dayType = "Rest Day"
+  when 2
+      dayType = "Special Non-Working Day"
+  when 3
+      dayType = "Special Non-Working Day and Rest Day"
+  when 4
+      dayType = "Regular Holiday"
+  when 5
+      dayType = "Regular Holiday and Rest Day"
+  end
+
+  puts "Day Type: #{dayType}"
+end
+
+def printChoices(choices)
+  exit_no = 1
+  choices.each_with_index do |opt, index|
+      puts "[#{index+1}] #{opt}"
+      exit_no = index+1
+  end
+  puts "[#{exit_no+1}] Exit"
+end
+
+
+# Calculations
 # Night shift interval
 $NIGHT_SHIFT = 22
 $END_NS = 6
@@ -196,4 +333,61 @@ def calculateDay(dayPayroll = nil)
     puts "Hours Overtime (Night Shift Overtime): #{ot_hours} (#{night_ot_hours})",
          "Night Shift Hours: #{night_hours}",
          "Salary for the day: #{final_salary.round(2)}"
+end
+
+
+# Main
+$defaultSalary = 500.00
+$required_hours = 8
+$days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+$payrolls = []
+
+def initializePayrolls()
+    $days.each do |day|
+        in_time = 900
+        out_time = 900
+        day_type = (day != "Saturday" && day != "Sunday") ? 0 : 1
+        payroll = DayPayroll.new(day, in_time, out_time, day_type)
+        $payrolls << payroll
+    end
+end
+
+def menu
+    in_time = 0
+    out_time = 1
+    menuOpts = ["Display Weekly Report", "Display Day Report",
+                "Edit In Time", "Edit Out Time", "Edit Salary", "Edit Day Type",
+                "Calculate Weekly Salary", "Calculate Day Salary"]
+
+    puts "\nMenu:"
+    printChoices(menuOpts)
+    choice = getValidRange("Enter your choice: ", 1..9)
+
+    case choice
+    when 1
+        weeklyReport
+    when 2
+        dayReport
+    when 3
+        editTime(in_time)
+    when 4
+        editTime(out_time)
+    when 5
+        editSalary
+    when 6
+        editDayType
+    when 7
+        calculateWeekly
+    when 8
+        calculateDay
+    when 9
+        puts "Exiting. Thank you."
+        exit
+    end
+end
+
+initializePayrolls
+
+while true
+    menu
 end
